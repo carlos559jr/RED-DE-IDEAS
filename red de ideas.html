@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red Estratégica: El Trabajo del Directivo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        #mynetwork { width: 100%; height: 100%; outline: none; }
+        .vis-tooltip {
+            background-color: #1e293b !important;
+            color: #f8fafc !important;
+            padding: 10px 14px !important;
+            border-radius: 8px !important;
+            font-size: 15px !important;
+            font-family: 'Inter', sans-serif !important;
+            border: none !important;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1) !important;
+        }
+    </style>
+    <script>
+        // Prevenir errores inofensivos de ResizeObserver
+        window.addEventListener('error', function(e) {
+            if (e.message.includes('ResizeObserver')) {
+                e.stopImmediatePropagation();
+            }
+        });
+    </script>
+</head>
+<body class="h-screen flex flex-col overflow-hidden text-slate-800">
+
+    <!-- Header con Datos Institucionales -->
+    <header class="bg-slate-900 text-white p-4 shadow-md z-10 shrink-0 border-b border-slate-700">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="text-center md:text-left">
+                <h1 class="text-xl md:text-2xl font-bold tracking-tight">El Trabajo del Directivo</h1>
+                <p class="text-blue-400 text-xs font-semibold uppercase tracking-widest mt-0.5">Universidad Unisalamanca</p>
+            </div>
+            
+            <div class="flex flex-col items-center md:items-end text-sm">
+                <span class="text-slate-300 font-medium">SEMINARIO V HUMANIDADES</span>
+                <span class="text-slate-400 text-xs mt-1">Realizado por: <strong class="text-white font-semibold">Carlos Sarabia</strong></span>
+            </div>
+
+            <div class="hidden lg:flex items-center space-x-4 text-xs">
+                <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-blue-600 mr-2"></span> Estructura</div>
+                <div class="flex items-center"><span class="w-4 h-0.5 bg-red-500 border-dashed mr-2"></span> Transversales</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col md:flex-row max-w-full overflow-hidden min-h-0">
+        
+        <!-- Network Canvas -->
+        <div class="flex-grow relative bg-white md:border-r border-slate-200 min-h-0">
+            <div id="mynetwork"></div>
+            
+            <!-- Floating Legend for mobile -->
+            <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur p-3 rounded-lg shadow-lg border border-slate-200 text-xs md:hidden">
+                <p class="font-semibold mb-1">Leyenda:</p>
+                <div class="flex items-center mb-1"><span class="w-3 h-3 rounded-full bg-blue-600 mr-2"></span> Jerarquía</div>
+                <div class="flex items-center"><span class="w-4 h-0.5 border-t-2 border-red-500 border-dashed mr-2"></span> Transversales</div>
+            </div>
+        </div>
+
+        <!-- Sidebar Panel -->
+        <aside class="w-full md:w-80 lg:w-96 bg-slate-50 flex flex-col h-1/3 md:h-full shadow-inner overflow-y-auto shrink-0 min-h-0">
+            <div class="p-6">
+                <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center border-b pb-2">
+                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Panel de Análisis
+                </h2>
+                
+                <div id="info-panel" class="space-y-4">
+                    <div class="p-4 bg-blue-50 text-blue-900 rounded-xl border border-blue-100">
+                        <p class="text-sm font-bold">💡 Tip de Visualización</p>
+                        <p class="text-xs mt-2 text-blue-700 leading-relaxed">Se ha aumentado el tamaño de las etiquetas para facilitar la lectura. Puedes usar la rueda del ratón para acercarte aún más a los sub-conceptos.</p>
+                    </div>
+
+                    <div class="mt-6 border-t pt-4">
+                        <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2 text-[10px]">Conexiones Estratégicas Clave</h3>
+                        <ul class="text-xs space-y-3 text-slate-600">
+                            <li class="flex items-start">
+                                <span class="text-red-500 mr-2 font-bold">↳</span>
+                                <span><strong>Liderazgo y Tiempo:</strong> La delegación efectiva es el puente entre inspirar al equipo y liberar tiempo estratégico.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-red-500 mr-2 font-bold">↳</span>
+                                <span><strong>Tiempo y Decisiones:</strong> Priorizar (tiempo) impacta directamente en la asignación eficiente de recursos (decisiones).</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        const nodeDescriptions = {
+            1: { title: "EL TRABAJO DEL DIRECTIVO", tag: "Eje Central", desc: "El centro neurálgico de la gestión organizacional. El directivo actúa como el puente entre la estrategia macro y la ejecución micro, equilibrando múltiples roles simultáneamente." },
+            2: { title: "Funciones Interpersonales", tag: "Rama Estructural", desc: "Relaciones humanas críticas derivadas de la autoridad formal. Incluye el liderazgo y la representación institucional." },
+            21: { title: "Rol Simbólico", tag: "Sub-función", desc: "Representación formal de la organización ante terceros y en actos internos solemnes." },
+            22: { title: "Liderazgo Transformacional", tag: "Sub-función", desc: "Capacidad de guiar con visión, inspirando cambios positivos en los colaboradores." },
+            23: { title: "Gestión del Talento", tag: "Sub-función", desc: "Identificar y potenciar las capacidades individuales del equipo de trabajo." },
+            24: { title: "Clima Organizacional", tag: "Sub-función", desc: "Construcción de un entorno laboral sano que propicie la productividad." },
+            3: { title: "Funciones Informativas", tag: "Rama Estructural", desc: "Gestión de la información como activo estratégico: captación, análisis y difusión." },
+            31: { title: "Inteligencia Organizacional", tag: "Sub-función", desc: "Monitoreo del mercado y competencia para la toma de decisiones informada." },
+            32: { title: "Flujo de Información", tag: "Sub-función", desc: "Asegurar que la información circule sin fricciones por toda la estructura." },
+            33: { title: "Comunicación Interna", tag: "Sub-función", desc: "Claridad en la transmisión de objetivos y valores a los empleados." },
+            34: { title: "Comunicación Externa", tag: "Sub-función", desc: "Gestión de la imagen pública y relaciones con stakeholders ajenos a la empresa." },
+            4: { title: "Funciones Decisorias", tag: "Rama Estructural", desc: "El corazón de la acción directiva: elegir el rumbo, resolver conflictos y asignar medios." },
+            41: { title: "Planeación Estratégica", tag: "Sub-función", desc: "Definición de metas a largo plazo y los pasos para alcanzarlas." },
+            42: { title: "Gestión del Riesgo", tag: "Sub-función", desc: "Evaluación de amenazas potenciales para minimizar impactos negativos." },
+            43: { title: "Decisiones Éticas", tag: "Sub-función", desc: "Resolución de dilemas complejos basándose en valores y responsabilidad social." },
+            44: { title: "Asignación de Recursos", tag: "Sub-función", desc: "Distribución de capital y talento hacia las áreas de mayor impacto." },
+            5: { title: "Tiempo como Recurso Estratégico", tag: "Rama Estructural", desc: "La gestión del tiempo propio y ajeno como factor crítico de éxito empresarial." },
+            51: { title: "Valor del Tiempo", tag: "Sub-función", desc: "Conciencia del costo de oportunidad en la agenda del directivo." },
+            52: { title: "Priorización Estratégica", tag: "Sub-función", desc: "Enfoque en lo vital por encima de lo meramente urgente." },
+            53: { title: "Delegación Efectiva", tag: "Sub-función", desc: "Empoderar al equipo para liberar capacidad directiva de alto nivel." },
+            54: { title: "Urgente vs Importante", tag: "Sub-función", desc: "Uso de herramientas como la matriz de Eisenhower para filtrar tareas." },
+            6: { title: "Toma de Decisiones Bajo Presión", tag: "Rama Estructural", desc: "Capacidad de actuar con acierto en crisis o entornos de alta volatilidad." },
+            61: { title: "Ambientes VUCA", tag: "Sub-función", desc: "Contextos de alta volatilidad, incertidumbre, complejidad y ambigüedad." },
+            62: { title: "Manejo de Incertidumbre", tag: "Sub-función", desc: "Decidir con información parcial asumiendo riesgos controlados." },
+            63: { title: "Evaluación Rápida", tag: "Sub-función", desc: "Agilidad mental para descartar opciones no viables en segundos." },
+            64: { title: "Responsabilidad Directiva", tag: "Sub-función", desc: "Asunción de consecuencias por las decisiones tomadas en momentos críticos." },
+            7: { title: "Impacto Humano", tag: "Rama Estructural", desc: "El efecto de la dirección sobre las personas y la sostenibilidad de la sociedad." },
+            71: { title: "Consecuencias Éticas", tag: "Sub-función", desc: "Impacto a largo plazo de la integridad directiva en el entorno." },
+            72: { title: "Impacto en Colaboradores", tag: "Sub-función", desc: "Efecto de las decisiones en la vida y carrera de los empleados." },
+            73: { title: "Reputación Corporativa", tag: "Sub-función", desc: "Construcción de marca y confianza ante la sociedad." },
+            74: { title: "Sostenibilidad", tag: "Sub-función", desc: "Asegurar que la empresa perdure creando valor compartido." }
+        };
+
+        window.onload = function() {
+            const nodes = new vis.DataSet([
+                // Centro - Tamaño aumentado significativamente
+                { id: 1, label: 'EL TRABAJO DEL\nDIRECTIVO', group: 'center', font: { size: 30, bold: true } },
+                
+                // Categorías - Tamaño intermedio
+                { id: 2, label: 'Funciones\nInterpersonales', group: 'category' },
+                { id: 3, label: 'Funciones\nInformativas', group: 'category' },
+                { id: 4, label: 'Funciones\nDecisorias', group: 'category' },
+                { id: 5, label: 'Tiempo como\nRecurso Estratégico', group: 'category' },
+                { id: 6, label: 'Decisiones\nBajo Presión', group: 'category' },
+                { id: 7, label: 'Impacto\nHumano', group: 'category' },
+
+                // Subnodos - Tamaño de lectura cómoda
+                { id: 21, label: 'Rol\nsimbólico', group: 'sub' },
+                { id: 22, label: 'Liderazgo\ntransformacional', group: 'sub' },
+                { id: 23, label: 'Gestión\ndel talento', group: 'sub' },
+                { id: 24, label: 'Clima\norganizacional', group: 'sub' },
+                { id: 31, label: 'Inteligencia\norganizacional', group: 'sub' },
+                { id: 32, label: 'Flujo de\ninformación', group: 'sub' },
+                { id: 33, label: 'Comunicación\ninterna', group: 'sub' },
+                { id: 34, label: 'Comunicación\nexterna', group: 'sub' },
+                { id: 41, label: 'Planeación\nestratégica', group: 'sub' },
+                { id: 42, label: 'Gestión\ndel riesgo', group: 'sub' },
+                { id: 43, label: 'Decisiones\néticas', group: 'sub' },
+                { id: 44, label: 'Asignación\nde recursos', group: 'sub' },
+                { id: 51, label: 'Valor\ndel tiempo', group: 'sub' },
+                { id: 52, label: 'Priorización\nestratégica', group: 'sub' },
+                { id: 53, label: 'Delegación\nefectiva', group: 'sub' },
+                { id: 54, label: 'Urgente vs\nImportante', group: 'sub' },
+                { id: 61, label: 'Ambientes\nVUCA', group: 'sub' },
+                { id: 62, label: 'Manejo de\nIncertidumbre', group: 'sub' },
+                { id: 63, label: 'Evaluación\nrápida', group: 'sub' },
+                { id: 64, label: 'Responsabilidad\ndirectiva', group: 'sub' },
+                { id: 71, label: 'Consecuencias\néticas', group: 'sub' },
+                { id: 72, label: 'Impacto en\ncolaboradores', group: 'sub' },
+                { id: 73, label: 'Reputación\ncorporativa', group: 'sub' },
+                { id: 74, label: 'Sostenibilidad', group: 'sub' }
+            ]);
+
+            const edges = new vis.DataSet([
+                { from: 1, to: 2, width: 4 }, { from: 1, to: 3, width: 4 }, { from: 1, to: 4, width: 4 },
+                { from: 1, to: 5, width: 4 }, { from: 1, to: 6, width: 4 }, { from: 1, to: 7, width: 4 },
+                { from: 2, to: 21 }, { from: 2, to: 22 }, { from: 2, to: 23 }, { from: 2, to: 24 },
+                { from: 3, to: 31 }, { from: 3, to: 32 }, { from: 3, to: 33 }, { from: 3, to: 34 },
+                { from: 4, to: 41 }, { from: 4, to: 42 }, { from: 4, to: 43 }, { from: 4, to: 44 },
+                { from: 5, to: 51 }, { from: 5, to: 52 }, { from: 5, to: 53 }, { from: 5, to: 54 },
+                { from: 6, to: 61 }, { from: 6, to: 62 }, { from: 6, to: 63 }, { from: 6, to: 64 },
+                { from: 7, to: 71 }, { from: 7, to: 72 }, { from: 7, to: 73 }, { from: 7, to: 74 },
+                // Transversales (Rojo discontinuo)
+                { from: 22, to: 53, color: '#ef4444', dashes: [5, 5], width: 2, smooth: { type: 'curvedCW', roundness: 0.2 } },
+                { from: 52, to: 44, color: '#ef4444', dashes: [5, 5], width: 2, smooth: { type: 'curvedCW', roundness: 0.2 } },
+                { from: 24, to: 72, color: '#ef4444', dashes: [5, 5], width: 2, smooth: { type: 'curvedCW', roundness: 0.2 } },
+                { from: 41, to: 61, color: '#ef4444', dashes: [5, 5], width: 2, smooth: { type: 'curvedCW', roundness: 0.2 } }
+            ]);
+
+            const container = document.getElementById('mynetwork');
+            const options = {
+                nodes: { 
+                    font: { face: 'Inter', color: '#1e293b' }, 
+                    borderWidth: 2,
+                    shadow: { enabled: true, color: 'rgba(0,0,0,0.1)', size: 8, x: 2, y: 2 }
+                },
+                edges: { color: { color: '#cbd5e1' }, smooth: { type: 'continuous' } },
+                groups: {
+                    center: { 
+                        shape: 'circle', 
+                        color: { background: '#1e3a8a', border: '#1e3a8a' }, 
+                        font: { color: '#ffffff', size: 30 },
+                        margin: 25 
+                    },
+                    category: { 
+                        shape: 'box', 
+                        color: { background: '#3b82f6', border: '#2563eb' }, 
+                        font: { color: '#ffffff', bold: true, size: 22 }, 
+                        margin: 15, 
+                        shapeProperties: { borderRadius: 10 } 
+                    },
+                    sub: { 
+                        shape: 'ellipse', 
+                        color: { background: '#ffffff', border: '#94a3b8' }, 
+                        font: { size: 18 },
+                        margin: 12 
+                    }
+                },
+                physics: {
+                    forceAtlas2Based: { gravitationalConstant: -200, centralGravity: 0.01, springLength: 200, springConstant: 0.04 },
+                    solver: 'forceAtlas2Based',
+                    stabilization: { iterations: 200 }
+                },
+                interaction: { hover: true, zoomSpeed: 0.5 }
+            };
+
+            const network = new vis.Network(container, { nodes, edges }, options);
+
+            network.on("click", function (params) {
+                if (params.nodes.length > 0) {
+                    const info = nodeDescriptions[params.nodes[0]];
+                    if (info) {
+                        const panel = document.getElementById('info-panel');
+                        let tagColor = "bg-slate-200 text-slate-700";
+                        if(info.tag === "Eje Central") tagColor = "bg-blue-900 text-white";
+                        if(info.tag === "Rama Estructural") tagColor = "bg-blue-500 text-white";
+                        
+                        panel.innerHTML = `
+                            <div class="animate-fade-in">
+                                <span class="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase mb-3 ${tagColor}">${info.tag}</span>
+                                <h3 class="text-xl font-bold text-slate-800 mb-3 leading-tight">${info.title}</h3>
+                                <p class="text-slate-600 text-sm leading-relaxed border-l-4 border-blue-500 pl-4 py-1 bg-slate-50">${info.desc}</p>
+                            </div>
+                        `;
+                    }
+                }
+            });
+
+            network.once("stabilizationIterationsDone", function () { network.fit(); });
+        };
+    </script>
+</body>
+</html>
